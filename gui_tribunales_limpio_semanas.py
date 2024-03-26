@@ -260,16 +260,8 @@ class AsignTribunalsGUI(AsyncTk):
         self.button_exportar.config(state="disabled")
         self.button_exportar.grid(row=3, columnspan=3, padx=5, pady=5)
 
-        
         convocatoria = self.convocatoria_combobox.get()
-        
-        fichero = "datos_simulados.json"
-        fecha_inicial = self.cal_ini.get_date()
-        fecha_final = self.cal_fin.get_date()
-        paran_las_clases = self.checkbox_var.get()
-        convocatoria = self.convocatoria_combobox.get()
-        self.intervalo_tribunales = [fecha_inicial,fecha_final]
-        
+
         self.asignaciones = await main_asignar(fichero, self.intervalo_tribunales, convocatoria, self.observable)
         
     async def exportar_tribunales_excel(self, fichero):

@@ -17,7 +17,7 @@ TIMEOUT_MILISECONDS = 50000
 HEADLESS = True
 username = "XXXXXXX"
 password = "XXXXXXX"
-school = "U-TAD"
+school = "XXXXX"
 
 clases_libres_5 = ["MAIS", "FIIS"]
 

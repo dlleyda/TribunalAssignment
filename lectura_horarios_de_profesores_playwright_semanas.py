@@ -15,8 +15,8 @@ import json
 
 TIMEOUT_MILISECONDS = 50000
 HEADLESS = True
-username = "horarios.utad"
-password = "3Hjb6xd.2"
+username = "XXXXXXX"
+password = "XXXXXXX"
 school = "U-TAD"
 
 clases_libres_5 = ["MAIS", "FIIS"]

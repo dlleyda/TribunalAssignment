@@ -270,7 +270,6 @@ def escribir_datos_leidos(fichero):
          json.dump(fichero, json_file, indent=2, ensure_ascii=False, default=json_encoder)    
 
 async def recoger_y_almacenar_horarios(excel_file, datos, fechas, paran_clases, observable):
-    excel_file = "../Ficheros excel tribunales/23-24 GESTOR.xlsm"
     
     profesores = ver_profesores_para_recoger_datos(excel_file)
     

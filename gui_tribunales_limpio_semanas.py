@@ -151,39 +151,16 @@ class ImageScraperGUI(AsyncTk):
         self.line = tk.Canvas(tab1, width=600, height=20)
         self.line.create_line(0, 20, 600, 20, fill="black")
         self.line.grid(row=9, columnspan=3, padx=5, pady=5)
-        
-        # Title label
-        # self.title_label3 = tk.Label(tab1, text="Recoger datos de excel", font=("Helvetica", 12, "bold"))
-        # self.title_label3.grid(row=6, columnspan=3, padx=5, pady=10)
-        
-        # Recoger datos del excel
-        # self.get_other_data_button = tk.Button(tab1, text="Recoger el resto de datos", command=self.get_all_data)
-        # if "horarios_profesores.pkl" not in os.listdir() and not self.uploaded_file_label.cget("text"):
-        #     self.get_other_data_button.config(state="disabled")
-        # self.get_other_data_button.grid(row=7, column=0, padx=5, pady=5)
 
         # Title label
         self.title_label4 = tk.Label(tab1, text="Asignar con los datos recogidos", font=("Helvetica", 12, "bold"))
         self.title_label4.grid(row=10, columnspan=3, padx=5, pady=10)
-        
-        # Button to reuse data
-        # self.reuse_button = tk.Button(tab1, text="Subir datos para reutilizar", command=self.reuse_data)
-        # self.reuse_button.grid(row=10, column=0, padx=5, pady=5)
-
-        # self.reuse_label = tk.Label(tab1, text="Datos para reutilizar:")
-        # self.reuse_label.grid(row=10, column=1, padx=5, pady=5, sticky="w")
-
-        # self.reused_file_label = tk.Label(tab1, text="")
-        # self.reused_file_label.grid(row=10, column=2, padx=5, pady=5)
 
         # Button to assign tribunales
         self.assign_button = tk.Button(tab1, text="Asignar tribunales", command=self.asignar_tribunales)
 #         if "datos.txt" not in os.listdir() and not self.reused_file_label.cget("text"):
         self.assign_button.config(state="normal")
         self.assign_button.grid(row=11, columnspan=3, padx=5, pady=5)
-
-        # self.calendario_btn = tk.Button(tab1, text="Abrir calendario", command=self.abrir_calendario)
-        # self.calendario_btn.grid(row=13, columnspan=3, padx=5, pady=5)
         
         # Observable and observer
         self.observable = Subject()
@@ -224,13 +201,6 @@ class ImageScraperGUI(AsyncTk):
         if file_path:
             self.uploaded_file_label.config(text=file_path)
             self.get_all_data()
-            
-
-    # def reuse_data(self):
-    #     file_path = filedialog.askopenfilename(filetypes=[("Text files", "*.json"), ("All files", "*.*")])
-    #     if file_path:
-    #         self.reused_file_label.config(text=file_path)
-    #         self.assign_button.config(state="normal")
     
     def on_checkbox_click(self):
         if self.checkbox_var.get() == 1:
@@ -239,9 +209,6 @@ class ImageScraperGUI(AsyncTk):
             print("Clases no se pararán")
     
     ############################### REALIZAR TAREAS ASÍNCRONAS ###############################
-    
-    # async def calendario(self):
-    #     await main_calendario()
     
     # Recogemos todos los horarios de los profesores de forma asíncrona
     async def recoger_horarios(self, fichero):
@@ -280,15 +247,8 @@ class ImageScraperGUI(AsyncTk):
         self.progressbar = ttk.Progressbar(self.newWindow, orient=tk.HORIZONTAL, length=300, mode='determinate')
         self.progressbar.grid(row=2, column=0, padx=(8, 8), pady=(16, 0), columnspan=3)
         
-        # fichero_excel = self.uploaded_file_label.cget("text")
-        
-        # if self.horarios:
-        #     self.lista_datos = await leer_escribir_datos(fichero_excel, self.horarios, self.observable)
-        # else:
-        #     self.lista_datos = await leer_escribir_datos(fichero_excel, "horarios_profesores.pkl", self.observable)
         self.datos_excel = await leer_escribir_datos(fichero_excel, self.observable)
             
-        # self.assign_button.config(state="normal")
         self.get_horarios_button.config(state="normal")
     
     # Hacemos la asignacion de forma asíncrona
@@ -312,15 +272,7 @@ class ImageScraperGUI(AsyncTk):
         self.button_exportar.config(state="disabled")
         self.button_exportar.grid(row=3, columnspan=3, padx=5, pady=5)
 
-        
         convocatoria = self.convocatoria_combobox.get()
-        
-        fichero = "datos_simulados.json"
-        fecha_inicial = self.cal_ini.get_date()
-        fecha_final = self.cal_fin.get_date()
-        paran_las_clases = self.checkbox_var.get()
-        convocatoria = self.convocatoria_combobox.get()
-        self.intervalo_tribunales = [fecha_inicial,fecha_final]
         
         self.asignaciones = await main_asignar(fichero, self.intervalo_tribunales, convocatoria, self.observable)
         
@@ -343,9 +295,6 @@ class ImageScraperGUI(AsyncTk):
         
     def get_all_data(self):
         self.queue.put_nowait(("recoger_datos_excel",self.uploaded_file_label.cget("text")))
-    
-    # def abrir_calendario(self):
-    #     self.queue.put_nowait(("calendario",""))
                 
     def asignar_tribunales(self):
         self.queue.put_nowait(("asignar_tribunales", self.horarios_con_datos))
@@ -400,7 +349,6 @@ class ImageScraperGUI(AsyncTk):
 
                 self.text_area.insert("end", texto + "\n")
             
-#             time.sleep(1)
             if iteracion == max_iters:
                 self.newWindow.destroy()
 
@@ -412,18 +360,6 @@ class ImageScraperGUI(AsyncTk):
             self.progressbar['value'] = iteracion
             if iteracion == max_iters:
                 self.newWindow.destroy()
-            
-        # Para evitar duplicados
-#         if img_alt not in self.image_names:
-#             # Añadimos la imagen al array de nombres de imagenes y actualizamos el listbox
-#             self.image_names.append(img_alt)
-#             self.image_listbox.insert(tk.END, img_alt)
-            
-#             # Actualizamos la barra de progreso
-#             self.progressbar['value'] += 1
-            
-#             # Actualizamos el texto de cuántas imagenes se han descargado
-#             self.success_download_label.config(text =f"Se han descargado con éxito {int(self.progressbar['value'])} imagenes")
 
 async def main():
     image_scrap_gui = ImageScraperGUI()

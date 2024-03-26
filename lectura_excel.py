@@ -16,17 +16,10 @@ def clean_columns(df_columns):
     
     return df_columns
 
-datos_tfg = None
-
 def lectura_datos_excel(fichero):
-    global datos_tfg
     
 #     fichero = "../Ficheros excel tribunales/23-24 GESTOR_ficticio.xlsm"
     warnings.simplefilter(action='ignore', category=UserWarning)
-    
-    datos_tfg = pd.read_excel("../Ficheros excel tribunales/23-24 GESTOR.xlsm", "Datos")
-    datos_tfg = datos_tfg[datos_tfg["TFG contrato"] != 0]
-    datos_tfg.columns = clean_columns(datos_tfg.columns)
     
     datos_tfg_fict = pd.read_excel(fichero, "Datos")
     datos_tfg_fict = datos_tfg_fict[datos_tfg_fict["TFG contrato"] != 0]
@@ -80,7 +73,6 @@ def asignar_alumnos_a_tutor(datos_tfg_fict, listado_alumnos_tfg):
 async def recoger_datos(datos_tfg_fict, listado_alumnos_tfg, asignacion_tfg, observable):
 
     lista_json = []
-    # horarios = [get_schedule(i, horarios_profesores) for i in datos_tfg["nombre apellidos"].to_list()]
     max_iters = len(datos_tfg_fict)
     iteracion = 0
     for index, row in datos_tfg_fict.iterrows():

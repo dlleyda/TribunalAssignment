@@ -346,7 +346,6 @@ class AsignTribunalsGUI(AsyncTk):
             self.progressbar['value'] = iteracion
             if iteracion == max_iters:
                 self.newWindow.destroy()
-            descargado con éxito {int(self.progressbar['value'])} imagenes")
 
 async def main():
     asing_tribunal_gui = AsignTribunalsGUI()

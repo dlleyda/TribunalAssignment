@@ -15,25 +15,12 @@ from tkinter import filedialog
 from tkcalendar import Calendar
 import os
 
-# Librería BeautifulSoup
-from bs4 import BeautifulSoup
-
-# Librería aiohttp
-import aiohttp
-
 #Librería asyncio
 import asyncio
 
 #Librería RXpy
 from rx.core import Observable
 from rx.subject import Subject
-from rx import of, operators, from_
-
-# Librería PILLOW
-from PIL import Image, ImageTk
-
-from io import BytesIO
-import requests
 
 
 
@@ -62,7 +49,7 @@ class AsyncTk(Tk):
         await asyncio.gather(*self.runners)
 
 
-class ImageScraperGUI(AsyncTk):
+class AsignTribunalsGUI(AsyncTk):
     def __init__(self):
         
         super().__init__()
@@ -151,7 +138,7 @@ class ImageScraperGUI(AsyncTk):
         self.line = tk.Canvas(tab1, width=600, height=20)
         self.line.create_line(0, 20, 600, 20, fill="black")
         self.line.grid(row=9, columnspan=3, padx=5, pady=5)
-
+        
         # Title label
         self.title_label4 = tk.Label(tab1, text="Asignar con los datos recogidos", font=("Helvetica", 12, "bold"))
         self.title_label4.grid(row=10, columnspan=3, padx=5, pady=10)
@@ -201,7 +188,7 @@ class ImageScraperGUI(AsyncTk):
         if file_path:
             self.uploaded_file_label.config(text=file_path)
             self.get_all_data()
-    
+            
     def on_checkbox_click(self):
         if self.checkbox_var.get() == 1:
             print("Clases se pararán")
@@ -249,6 +236,7 @@ class ImageScraperGUI(AsyncTk):
         
         self.datos_excel = await leer_escribir_datos(fichero_excel, self.observable)
             
+        # self.assign_button.config(state="normal")
         self.get_horarios_button.config(state="normal")
     
     # Hacemos la asignacion de forma asíncrona
@@ -272,7 +260,15 @@ class ImageScraperGUI(AsyncTk):
         self.button_exportar.config(state="disabled")
         self.button_exportar.grid(row=3, columnspan=3, padx=5, pady=5)
 
+        
         convocatoria = self.convocatoria_combobox.get()
+        
+        fichero = "datos_simulados.json"
+        fecha_inicial = self.cal_ini.get_date()
+        fecha_final = self.cal_fin.get_date()
+        paran_las_clases = self.checkbox_var.get()
+        convocatoria = self.convocatoria_combobox.get()
+        self.intervalo_tribunales = [fecha_inicial,fecha_final]
         
         self.asignaciones = await main_asignar(fichero, self.intervalo_tribunales, convocatoria, self.observable)
         
@@ -295,7 +291,7 @@ class ImageScraperGUI(AsyncTk):
         
     def get_all_data(self):
         self.queue.put_nowait(("recoger_datos_excel",self.uploaded_file_label.cget("text")))
-                
+    
     def asignar_tribunales(self):
         self.queue.put_nowait(("asignar_tribunales", self.horarios_con_datos))
         
@@ -307,7 +303,6 @@ class ImageScraperGUI(AsyncTk):
     
     # En el caso de que la descarga se realice con exito, se actualiza la GUI
     def observer(self, data):
-        # Solo nos interesa el "nombre" de la imagen
         tarea, *datos = data
         
         if tarea == "asignar_tribunales":
@@ -327,7 +322,6 @@ class ImageScraperGUI(AsyncTk):
 
                 self.text_area.insert("end", texto + "\n")
             
-#             time.sleep(1)
             if num_estudiantes_asignados == num_estudiantes_total:
                 self.button_exportar.config(state="normal")
             
@@ -360,10 +354,11 @@ class ImageScraperGUI(AsyncTk):
             self.progressbar['value'] = iteracion
             if iteracion == max_iters:
                 self.newWindow.destroy()
+            descargado con éxito {int(self.progressbar['value'])} imagenes")
 
 async def main():
-    image_scrap_gui = ImageScraperGUI()
-    await image_scrap_gui.run()
+    asing_tribunal_gui = AsignTribunalsGUI()
+    await asing_tribunal_gui.run()
 
 # if __name__ == '__main__':
 asyncio.run(main())

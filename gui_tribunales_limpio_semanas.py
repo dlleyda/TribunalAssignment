@@ -54,23 +54,19 @@ class AsignTribunalsGUI(AsyncTk):
         
         super().__init__()
         
-        # Iniciamos la cola y los workers
+        # Iniciamos la cola y los runners
         self.queue = asyncio.Queue()
-        self.runners.append(self.worker("1"))
-        self.runners.append(self.worker("2"))
-        self.runners.append(self.worker("3"))
+        self.runners.append(self.runner("1"))
+        self.runners.append(self.runner("2"))
+        self.runners.append(self.runner("3"))
         
-        # No funciona -> Aún dándole a la x sigue corriendo el programa🤷‍♂️
         self.protocol("WM_DELETE_WINDOW", self.stop)
         
         self.title("GUI")
         
         tabControl = ttk.Notebook()
         tab1 = ttk.Frame(tabControl)
-        tab2 = ttk.Frame(tabControl)
         tabControl.add(tab1, text='Carga de datos')
-        tabControl.add(tab2, text='Asignaciones')
-        
         tabControl.pack(expand = 1, fill ="both") 
         
         # Title label
@@ -146,7 +142,7 @@ class AsignTribunalsGUI(AsyncTk):
         # Button to assign tribunales
         self.assign_button = tk.Button(tab1, text="Asignar tribunales", command=self.asignar_tribunales)
 #         if "datos.txt" not in os.listdir() and not self.reused_file_label.cget("text"):
-        self.assign_button.config(state="normal")
+        self.assign_button.config(state="disabled")
         self.assign_button.grid(row=11, columnspan=3, padx=5, pady=5)
         
         # Observable and observer
@@ -162,9 +158,9 @@ class AsignTribunalsGUI(AsyncTk):
         
         
         
-    async def worker(self,name):
+    async def runner(self,name):
         while self.running:
-            # Recogemos una url y su titulo para cada imagen detectada
+            # Recogemos una tarea y el fichero o datos necesarios para ejecutar
             tarea, fichero = await self.queue.get()
 
             if tarea == "asignar_tribunales":
@@ -179,7 +175,8 @@ class AsignTribunalsGUI(AsyncTk):
             # Notificamos a la cola que la tarea se ha completado
             self.queue.task_done()
         if not self.running:
-            print(f"Ha parado el worker{name}")
+            self.queue.task_done()
+            print(f"Ha parado el runner{name}")
 
             
             
@@ -199,8 +196,6 @@ class AsignTribunalsGUI(AsyncTk):
     
     # Recogemos todos los horarios de los profesores de forma asíncrona
     async def recoger_horarios(self, fichero):
-        # Toplevel object which will 
-        # be treated as a new window
         self.newWindow = tk.Toplevel(self)
         self.progressbar = ttk.Progressbar(self.newWindow, orient=tk.HORIZONTAL, length=300, mode='determinate')
         self.progressbar.grid(row=2, column=0, padx=(8, 8), pady=(16, 0), columnspan=3)
@@ -214,29 +209,22 @@ class AsignTribunalsGUI(AsyncTk):
         # Attach the scrollbar to the text area
         self.text_area.config(yscrollcommand=self.scrollbar.set)
 
-        
         fecha_inicial = self.cal_ini.get_date()
         fecha_final = self.cal_fin.get_date()
         paran_las_clases = self.checkbox_var.get()
         convocatoria = self.convocatoria_combobox.get()
         
         self.intervalo_tribunales = [fecha_inicial,fecha_final]
-        # print(self.convocatoria_combobox.get())
 
         self.horarios_con_datos = await recoger_y_almacenar_horarios(fichero, self.datos_excel, self.intervalo_tribunales, paran_las_clases, self.observable)
         self.assign_button.config(state="normal")
-        # self.get_other_data_button.config(state="normal")
         
     async def recoger_datos(self, fichero_excel):
-        # Toplevel object which will 
-        # be treated as a new window
         self.newWindow = tk.Toplevel(self)
         self.progressbar = ttk.Progressbar(self.newWindow, orient=tk.HORIZONTAL, length=300, mode='determinate')
         self.progressbar.grid(row=2, column=0, padx=(8, 8), pady=(16, 0), columnspan=3)
         
         self.datos_excel = await leer_escribir_datos(fichero_excel, self.observable)
-            
-        # self.assign_button.config(state="normal")
         self.get_horarios_button.config(state="normal")
     
     # Hacemos la asignacion de forma asíncrona
@@ -260,16 +248,12 @@ class AsignTribunalsGUI(AsyncTk):
         self.button_exportar.config(state="disabled")
         self.button_exportar.grid(row=3, columnspan=3, padx=5, pady=5)
 
+        
         convocatoria = self.convocatoria_combobox.get()
-
+        
         self.asignaciones = await main_asignar(fichero, self.intervalo_tribunales, convocatoria, self.observable)
         
     async def exportar_tribunales_excel(self, fichero):
-        
-        fecha_inicial = self.cal_ini.get_date()
-        fecha_final = self.cal_fin.get_date()
-        self.intervalo_tribunales = [fecha_inicial,fecha_final]
-        
         await exportar_asignaciones_excel(fichero, self.intervalo_tribunales)
         self.newWindow.destroy()
     ##########################################################################################
@@ -302,16 +286,12 @@ class AsignTribunalsGUI(AsyncTk):
             if num_estudiantes_asignados == -1:
                 self.progressbar['maximum'] = 1
                 self.progressbar['value'] = 0
-            
                 self.text_area.insert("end", string + "\n")
             else:
-                
                 self.progressbar['maximum'] = num_estudiantes_total
-                # Actualizamos la barra de progreso
                 self.progressbar['value'] = num_estudiantes_asignados
 
                 texto = f"Se ha asignado un tribunal para {student}"
-
                 self.text_area.insert("end", texto + "\n")
             
             if num_estudiantes_asignados == num_estudiantes_total:
@@ -319,30 +299,24 @@ class AsignTribunalsGUI(AsyncTk):
             
         elif tarea == "get_horarios":
             iteracion, max_iters, string = datos
-            
             if iteracion == -1:
                 self.progressbar['maximum'] = 1
                 self.progressbar['value'] = 0
             
                 self.text_area.insert("end", string + "\n")
             else:
-                
                 self.progressbar['maximum'] = max_iters
-                # Actualizamos la barra de progreso
                 self.progressbar['value'] = iteracion
 
                 texto = f"Se ha descargado el horario de {string}"
-
                 self.text_area.insert("end", texto + "\n")
             
             if iteracion == max_iters:
                 self.newWindow.destroy()
-
         
         elif tarea == "recoger_datos_excel":
             iteracion, max_iters = datos
             self.progressbar['maximum'] = max_iters
-            # Actualizamos la barra de progreso
             self.progressbar['value'] = iteracion
             if iteracion == max_iters:
                 self.newWindow.destroy()
